@@ -1,0 +1,64 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/utils/render-status.html">
+<link rel="import" href="../imports/axios.html">
+
+<script>
+  Polymer.MyApiManagerBehavior = {
+    properties: {
+      __axios: {
+        type: Object,
+        value: () => axios,
+      },
+      __axiosConfig: {
+        typeof: Object,
+        value: {
+          method: 'get',
+          timeout: 10000,
+        },
+      },
+      apiManager: Object,
+    },
+
+    ready() {
+      this.__suscribe()
+    },
+
+    configAxios(key, value) {
+      if(typeof key === 'object') {
+        this.set('__axiosConfig', key);
+      } else if(typeof key === 'string' && typeof value !== 'undefined') {
+        this.set(`__axiosConfig.${key}`, value);
+      }
+    },
+
+    createApiManager() {
+      this.set('apiManager', this.__axios.create(this.__axiosConfig));
+    },
+
+    __suscribe() {
+      this.addEventListener('sendGetRequest', (e) => { this.getItem(e); });
+    },
+
+    getItem(e) {
+      const req = e.detail.req;
+      const res = e.detail.res;
+      this.apiManager.get(req.url)
+        .then((response) => {
+          if (res.target) {
+            this.set(res.target, response.data);
+          }
+        })
+        .catch((error) => {
+          if (res.errorAttr) {
+            let errorTarget = error;
+            if (res.errorMessage) {
+              errorTarget = errorMessage;
+            }
+            this.set(res.errorAttr, errorTarget);
+          }
+        });
+    },
+
+  }
+
+</script>
