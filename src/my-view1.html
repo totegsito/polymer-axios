@@ -58,7 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _sendRequest() {
-        this.dispatchEvent(new CustomEvent('sendGetRequest', {
+        this.dispatchEvent(new CustomEvent('sendRequest', {
           detail: {
             req : {
               url: 'https://randomuser.me/api/?results=10'

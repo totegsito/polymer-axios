@@ -36,28 +36,71 @@
     },
 
     __suscribe() {
-      this.addEventListener('sendGetRequest', (e) => { this.getItem(e); });
+      this.addEventListener('sendRequest', (e) => { this.sendRequest(e); });
     },
 
-    getItem(e) {
+
+    sendRequest(e) {
       const req = e.detail.req;
       const res = e.detail.res;
-      this.apiManager.get(req.url)
-        .then((response) => {
-          if (res.target) {
-            this.set(res.target, response.data);
-          }
-        })
-        .catch((error) => {
-          if (res.errorAttr) {
-            let errorTarget = error;
-            if (res.errorMessage) {
-              errorTarget = errorMessage;
-            }
-            this.set(res.errorAttr, errorTarget);
-          }
-        });
+      const method = e.detail.method || 'get';
+      const config = req.config || {};
+      if (method === 'post' || method === 'put' || method === 'patch') {
+        this.sendDataRequest(method, req, res);
+      } else {
+        this.sendSimpleRequest(method, req, res);
+      }
     },
+
+    sendSimpleRequest(method, req, res) {
+      const handler = this.__getHandlers(res);
+      this.apiManager[method](req.url, req.config)
+        .then((response) => { handler.responseHandler(response, res.target); })
+        .catch((error) => { handler.errorHandler(error, res.errorAttr, es.errorMessage)});
+    },
+
+    sendDataRequest(method, req, res) {
+      const data = req.data || {};
+      const handler = this.__getHandlers(res);
+      this.apiManager[method](req.url, data, req.config)
+        .then((response) => { handler.responseHandler(response, res.target); })
+        .catch((error) => { handler.errorHandler(error, res.errorAttr, es.errorMessage)});
+    },
+
+    __getHandlers(res) {
+      return {
+        responseHandler: this.__getResponseHandler(res),
+        errorHandler: this.__getErrorHandler(res),
+      };
+    },
+
+    __getResponseHandler(res) {
+      return (res.target !== undefined ? this.__logger : this.__handleResponse);
+    },
+
+    __getErrorHandler(res) {
+      return (res.errorAttr !== undefined ? this.__logger : this.__handleError);
+    },
+
+    __handleError(error, errorTarget, errorMessage) {
+      let errorTarget = error;
+      if (errorMessage) {
+        errorTarget = errorMessage;
+      }
+      this.set(errorTarget, errorTarget);
+      this.set('last-error', error);
+    },
+
+    __handleResponse(response, target) {
+      this.set(target, responseData);
+      this.set('last-response', response);
+    },
+
+    __logger(data) {
+      console.log(data);
+    }
+
+
 
   }
 
