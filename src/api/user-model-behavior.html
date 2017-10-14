@@ -1,0 +1,27 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/utils/render-status.html">
+<link rel="import" href="../imports/axios.html">
+<link rel="import" href="../behaviors/my-api-manager-behavior.html">
+
+<script>
+    UserModelRequest = {
+    ready() {
+         this.createApiManager();
+    },
+    getUser() {
+        this.dispatchEvent(new CustomEvent('sendRequest', {
+          detail: {
+            req : {
+              url: 'https://randomuser.me/api/?results=10'
+            },
+            res : {
+              target: 'users',
+              errorAttr: 'usersError',
+              errorMessage:  'Ha habido un problema con la petición',
+            }
+          }
+        }));
+      }
+    }
+    Polymer.UserModelBehavior = [UserModelRequest,  Polymer.MyApiManagerBehavior];
+</script>

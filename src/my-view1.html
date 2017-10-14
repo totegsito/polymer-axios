@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
-<link rel="import" href="behaviors/my-api-manager-behavior.html">
+<link rel="import" href="./api/user-model-behavior.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="my-view1">
@@ -34,7 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <p style="color: red;">{{usersError}}</p>
         </template>
       </ul>
-      <button on-tap="_sendRequest" name="button">
+      <button on-tap="getUser" name="button">
         GET USERS
       </button>
     </div>
@@ -42,34 +42,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     class MyView1 extends Polymer.mixinBehaviors(
-      Polymer.MyApiManagerBehavior,
+      Polymer.UserModelBehavior,
       Polymer.Element) {
       static get is() { return 'my-view1'; }
 
       static get properties() {
         return {
-          users: Object,
+          users: {
+            type: Object,
+            observer: 'x'
+          }
         }
       }
 
       ready() {
         super.ready();
-        this.createApiManager();
       }
-
-      _sendRequest() {
-        this.dispatchEvent(new CustomEvent('sendRequest', {
-          detail: {
-            req : {
-              url: 'https://randomuser.me/api/?results=10'
-            },
-            res : {
-              target: 'users',
-              errorAttr: 'usersError',
-              errorMessage:  'Ha habido un problema con la petición',
-            }
-          }
-        }));
+      x(){
+        console.log(this.users)
       }
     }
 
