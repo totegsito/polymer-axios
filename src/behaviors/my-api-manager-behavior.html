@@ -56,7 +56,7 @@
       const handler = this.__getHandlers(res);
       this.apiManager[method](req.url, req.config)
         .then((response) => { handler.responseHandler(response, res.target); })
-        .catch((error) => { handler.errorHandler(error, res.errorAttr, es.errorMessage)});
+        .catch((error) => { handler.errorHandler(error, res.errorAttr, res.errorMessage)});
     },
 
     sendDataRequest(method, req, res) {
@@ -64,7 +64,7 @@
       const handler = this.__getHandlers(res);
       this.apiManager[method](req.url, data, req.config)
         .then((response) => { handler.responseHandler(response, res.target); })
-        .catch((error) => { handler.errorHandler(error, res.errorAttr, es.errorMessage)});
+        .catch((error) => { handler.errorHandler(error, res.errorAttr, res.errorMessage)});
     },
 
     __getHandlers(res) {
@@ -75,7 +75,7 @@
     },
 
     __getResponseHandler(res) {
-      return (res.target !== undefined ? this.__logger : this.__handleResponse);
+      return (res.target === undefined ? this.__logger : this.__handleResponse.bind(this));
     },
 
     __getErrorHandler(res) {
@@ -92,8 +92,9 @@
     },
 
     __handleResponse(response, target) {
-      this.set(target, responseData);
-      this.set('last-response', response);
+      this[target] = response.data;
+      this.set(`${target}`, response.data)
+      this['last-response'] = response;
     },
 
     __logger(data) {
