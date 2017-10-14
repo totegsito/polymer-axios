@@ -63,7 +63,7 @@
       const data = req.data || {};
       const handler = this.__getHandlers(res);
       this.apiManager[method](req.url, data, req.config)
-        .then((response) => { debugger; handler.responseHandler(response, res.target); })
+        .then((response) => { handler.responseHandler(response, res.target); })
         .catch((error) => { handler.errorHandler(error, res.errorAttr, res.errorMessage)});
     },
 
@@ -75,7 +75,7 @@
     },
 
     __getResponseHandler(res) {
-      return (res.target === undefined ? this.__logger : this.__handleResponse);
+      return (res.target === undefined ? this.__logger : this.__handleResponse.bind(this));
     },
 
     __getErrorHandler(res) {
@@ -93,6 +93,7 @@
 
     __handleResponse(response, target) {
       this[target] = response.data;
+      this.set(`${target}`, response.data)
       this['last-response'] = response;
     },
 
